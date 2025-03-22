@@ -35,3 +35,4 @@ def handler(event, context):
 # Run the app locally if not on Vercel
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+    
