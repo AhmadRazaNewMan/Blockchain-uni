@@ -1,5 +1,5 @@
 import json
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -11,39 +11,26 @@ def mine_block():
 def is_server_running():
     return 'Server is Running Successfully', 200
 
-
-
-
-
-
-
-
-
-# Vercel requires a serverless function handler
+# Vercel serverless function handler
 def handler(event, context):
-    from flask import request
+    from flask import Request
 
-    with app.app_context():
-        # Simulate a Flask request
-        path = event['path']
-        method = event['httpMethod']
-        headers = event.get('headers', {})
-        body = event.get('body', '')
+    # Create a fake request object from the event
+    with app.test_request_context(
+        path=event['path'],
+        method=event['httpMethod'],
+        headers=event.get('headers', {}),
+        data=event.get('body', '')
+    ):
+        # Dispatch the request to the Flask app
+        response = app.full_dispatch_request()
 
-        # Create a Flask test client
-        with app.test_client() as client:
-            response = client.open(
-                path=path,
-                method=method,
-                headers=headers,
-                data=body
-            )
-
-            return {
-                'statusCode': response.status_code,
-                'headers': dict(response.headers),
-                'body': response.data.decode('utf-8')
-            }
+        # Return the response in the format Vercel expects
+        return {
+            'statusCode': response.status_code,
+            'headers': dict(response.headers),
+            'body': response.data.decode('utf-8')
+        }
 
 # Run the app locally if not on Vercel
 if __name__ == '__main__':
